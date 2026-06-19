@@ -1,0 +1,68 @@
+<h2 class="sr-only">Bit derinliği arttıkça niceleme basamaklarının gerçek eğriye yaklaşmasını gösteren interaktif demo</h2>
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.lvlrow{display:flex;align-items:center;gap:12px;margin:0 0 1.25rem}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem;flex:1}
+.metric .lab{font-size:13px;color:var(--color-text-secondary);margin:0 0 4px}
+.metric .val{font-size:24px;font-weight:500;color:var(--color-text-primary);margin:0}
+.legend{display:flex;gap:18px;font-size:13px;color:var(--color-text-secondary);margin:.75rem 0 0;flex-wrap:wrap}
+.swatch{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+</style>
+
+<div class="lvlrow">
+  <label for="bits" style="font-size:14px;color:var(--color-text-secondary);min-width:34px">Bit</label>
+  <input type="range" id="bits" min="1" max="6" step="1" value="2" style="flex:1">
+  <span id="bitsOut" style="font-size:14px;font-weight:500;min-width:16px">2</span>
+</div>
+
+<div style="display:flex;gap:12px;margin:0 0 1.25rem">
+  <div class="metric"><p class="lab">Hazır kutu (seviye) sayısı</p><p class="val" id="levels">4</p></div>
+  <div class="metric"><p class="lab">Ortalama yuvarlama hatası</p><p class="val" id="err">—</p></div>
+</div>
+
+<div style="position:relative;height:260px;margin:0 0 .5rem">
+  <canvas id="cv" style="width:100%;height:100%;display:block"></canvas>
+</div>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#1D9E75"></span>gerçek değerler (FP16, kesintisiz)</span>
+  <span><span class="swatch" style="background:#7F77DD"></span>nicelenmiş (basamaklar)</span>
+</div>
+
+<script>
+(function(){
+  var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+  var slider=document.getElementById('bits');
+  function f(x){return 0.62*Math.sin(x*6.283)+0.30*Math.sin(x*2.6+0.8);}
+  function txt(){return getComputedStyle(document.body).getPropertyValue('--color-text-secondary')||'#888';}
+  function grid(){return getComputedStyle(document.body).getPropertyValue('--color-border-tertiary')||'rgba(0,0,0,.15)';}
+  function draw(){
+    var b=+slider.value, L=Math.pow(2,b);
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    var w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+    var pad=14, top=pad, bot=h-pad, mid=(top+bot)/2, amp=(bot-top)/2*0.92;
+    var ymin=-1,ymax=1,stepv=(ymax-ymin)/(L-1);
+    function Y(v){return mid-v*amp;}
+    function quant(v){var k=Math.round((v-ymin)/stepv);return ymin+k*stepv;}
+    ctx.strokeStyle=grid();ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    for(var i=0;i<L;i++){var v=ymin+i*stepv,yy=Y(v);ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(w-pad,yy);ctx.stroke();}
+    ctx.setLineDash([]);
+    var N=240,err=0;
+    ctx.strokeStyle='#7F77DD';ctx.lineWidth=2.4;ctx.beginPath();
+    for(var j=0;j<=N;j++){var x=j/N,qy=quant(f(x)),px=pad+x*(w-2*pad);if(j===0)ctx.moveTo(px,Y(qy));else ctx.lineTo(px,Y(qy));}
+    ctx.stroke();
+    ctx.strokeStyle='#1D9E75';ctx.lineWidth=2.4;ctx.beginPath();
+    for(var k2=0;k2<=N;k2++){var x2=k2/N,ty=f(x2),px2=pad+x2*(w-2*pad);if(k2===0)ctx.moveTo(px2,Y(ty));else ctx.lineTo(px2,Y(ty));err+=Math.abs(ty-quant(ty));}
+    ctx.stroke();
+    err=err/(N+1)/2*100;
+    document.getElementById('bitsOut').textContent=b;
+    document.getElementById('levels').textContent=L;
+    document.getElementById('err').textContent='%'+err.toFixed(1);
+  }
+  slider.addEventListener('input',draw);
+  window.addEventListener('resize',draw);
+  draw();
+})();
+</script>
