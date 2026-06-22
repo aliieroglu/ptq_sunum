@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuIP# Hadamard & E8P İnteraktif Anlatım</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a31; --panel2:#182342; --ink:#eef4ff; --muted:#aab8d8;
+    --accent:#6ee7ff; --accent2:#a78bfa; --good:#7dd3fc; --warn:#fbbf24; --bad:#fb7185;
+    --grid:#2a3762; --line:#40517f; --shadow:rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:radial-gradient(1200px 800px at 10% -10%, #23325e 0%, #10172b 35%, var(--bg) 70%); color:var(--ink); line-height:1.55}
+  a{color:var(--accent)}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+  header{padding:34px 24px;border:1px solid #243356;background:linear-gradient(145deg,rgba(18,26,49,.92),rgba(11,16,32,.86));border-radius:24px;box-shadow:0 16px 50px var(--shadow);position:relative;overflow:hidden}
+  header:after{content:"";position:absolute;right:-120px;top:-110px;width:340px;height:340px;background:radial-gradient(circle,#6ee7ff33,transparent 62%)}
+  h1{font-size:clamp(29px,4vw,52px);line-height:1.05;margin:0 0 14px;letter-spacing:-.04em}
+  h2{font-size:clamp(23px,2.7vw,34px);line-height:1.14;margin:0 0 14px;letter-spacing:-.025em}
+  h3{font-size:20px;margin:0 0 10px;color:#dbeafe}
+  p{margin:10px 0;color:#d8e2ff}
+  .muted{color:var(--muted)}
+  .pillrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .pill{border:1px solid #34466f;background:#13203b;border-radius:999px;padding:7px 11px;color:#cbd5ff;font-size:14px}
+  .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr);margin-top:20px}
+  .card{grid-column:span 12;border:1px solid #253761;background:linear-gradient(180deg,rgba(18,26,49,.94),rgba(16,23,43,.92));border-radius:22px;padding:20px;box-shadow:0 14px 34px var(--shadow)}
+  .half{grid-column:span 6}.third{grid-column:span 4}.twoThird{grid-column:span 8}
+  @media(max-width:860px){.half,.third,.twoThird{grid-column:span 12}.wrap{padding:16px 10px 60px}.card{padding:16px}header{padding:24px 16px}}
+  .formula{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#081126;border:1px solid #26375e;border-radius:14px;padding:12px;color:#dbeafe;overflow:auto}
+  .bigIdea{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:start}
+  .num{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,#38bdf8,#8b5cf6);font-weight:900;font-size:24px;color:#04111f;box-shadow:0 8px 24px #38bdf844}
+  canvas{width:100%;background:#091126;border:1px solid #26375e;border-radius:18px;display:block;touch-action:manipulation}
+  .controls{display:grid;gap:12px;margin-top:14px}
+  .control{background:#0d1630;border:1px solid #26375e;border-radius:14px;padding:12px}
+  .control label{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:14px;color:#cbd5e1;margin-bottom:6px}
+  input[type="range"]{width:100%;accent-color:#67e8f9}
+  button,.tab{appearance:none;border:1px solid #36527f;background:#14203d;color:#eef4ff;border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  button:hover,.tab:hover{background:#1b2a50}.tab.active,button.primary{background:linear-gradient(135deg,#0891b2,#7c3aed);border-color:#67e8f9;color:white}
+  .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  @media(max-width:680px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#0d1630;border:1px solid #26375e;border-radius:14px;padding:10px}
+  .stat b{display:block;font-size:19px;color:#e0f2fe}.stat span{font-size:12px;color:var(--muted)}
+  .stepper{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.step{flex:1;min-width:130px;border:1px solid #2b3e67;border-radius:16px;padding:12px;background:#0e1830;cursor:pointer;position:relative}.step.active{outline:2px solid #67e8f9;background:#152545}.step small{display:block;color:#9fb0d4;margin-top:4px}
+  .pipeline{display:flex;align-items:center;gap:10px;overflow:auto;padding:10px 4px 6px}.pipebox{min-width:140px;background:#0d1730;border:1px solid #2b3e67;border-radius:16px;padding:12px;text-align:center}.arrow{font-size:26px;color:#7dd3fc;opacity:.9}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:#cbd5e1;margin-top:8px}.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}.cyan{background:#67e8f9}.purple{background:#a78bfa}.yellow{background:#fbbf24}.red{background:#fb7185}.gray{background:#94a3b8}
+  .note{border-left:4px solid #67e8f9;background:#0d1833;border-radius:12px;padding:12px 14px;color:#dbeafe}.warning{border-left-color:#fbbf24}
+  .quiz{display:grid;gap:10px}.choice{border:1px solid #34466f;background:#0d1630;border-radius:14px;padding:12px;cursor:pointer}.choice.correct{border-color:#22c55e;background:#12311f}.choice.wrong{border-color:#fb7185;background:#331323}.feedback{min-height:28px;color:#dbeafe}
+  .mini{font-size:13px;color:#9fb0d4}.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#111b35;border:1px solid #2b3e67;border-radius:8px;padding:2px 6px;color:#e0f2fe}
+  details{background:#0d1630;border:1px solid #26375e;border-radius:16px;padding:12px 14px}summary{cursor:pointer;font-weight:800;color:#e0f2fe}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Hadamard “karıştırması” ve E8P: değerler neden sıfıra yaklaşır, sonra nasıl ayrık noktalara dönüşür?</h1>
+  <p class="muted">QuIP# makalesindeki fikri hiç bilmeyen biri için oyuncak simülasyonlarla anlatım. Buradaki çizimler 2D/16D basitleştirme; makaledeki gerçek işlem büyük matrislerde ve E8P için 8 boyutta yapılıyor.</p>
+  <div class="pillrow">
+    <span class="pill">1) Outlier bastırma</span>
+    <span class="pill">2) Hadamard = enerji yayma</span>
+    <span class="pill">3) Gaussian / top şeklinde bulut</span>
+    <span class="pill">4) Lattice codebook = ayrık merkezlere yapıştırma</span>
+  </div>
+</header>
+
+<section class="grid">
+  <div class="card twoThird">
+    <h2>Önce tek cümlelik sezgi</h2>
+    <div class="bigIdea">
+      <div class="num">1</div>
+      <div><h3>Hadamard, tek bir büyük değeri birçok küçük parçaya böler.</h3><p>Bir odanın ortasında tek bir dev hoparlör düşün. Ses tek noktada patlıyor. Hadamard transformu, o sesi bütün odaya eşitçe dağıtan yankı sistemi gibi davranır. Toplam ses enerjisi kaybolmaz ama tek noktadaki aşırı yük azalır.</p></div>
+    </div>
+    <div class="bigIdea" style="margin-top:16px">
+      <div class="num">2</div>
+      <div><h3>Sonra quantization, bu sürekli değerleri en yakın hazır kutuya koyar.</h3><p>Değerler artık daha küçük ve yuvarlak/top gibi bir bulut oluşturduğu için, E8 gibi iyi paketlenmiş hazır noktalarla temsil etmek kolaylaşır. Sürekli sayıların “ayrık değerlere dönüşmesi” burada olur.</p></div>
+    </div>
+  </div>
+  <div class="card third">
+    <h3>Yanlış anlaşılmasın</h3>
+    <p>“Bütün değerler sıfıra gidiyor” derken matematiksel olarak hepsi gerçekten 0 olmuyor. Daha doğru cümle:</p>
+    <div class="formula">tek tek koordinatların büyüklüğü küçülür;<br/>toplam enerji yaklaşık korunur.</div>
+    <p class="mini">Yani dev sivri uç kaybolur; enerji birçok koordinata yayılır.</p>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card">
+    <h2>Makaledeki akış</h2>
+    <div class="pipeline">
+      <div class="pipebox">Orijinal ağırlıklar<br><span class="mini">sivri uçlar olabilir</span></div><div class="arrow">→</div>
+      <div class="pipebox">Rastgele ± işaret<br><span class="mini">deseni kır</span></div><div class="arrow">→</div>
+      <div class="pipebox">Hadamard<br><span class="mini">karıştır / yay</span></div><div class="arrow">→</div>
+      <div class="pipebox">Top gibi bulut<br><span class="mini">Gaussian benzeri</span></div><div class="arrow">→</div>
+      <div class="pipebox">E8P codebook<br><span class="mini">8D hazır noktalar</span></div><div class="arrow">→</div>
+      <div class="pipebox">2-bit sıkıştırılmış model<br><span class="mini">az bellek</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card half">
+    <h2>Oyun 1 — Dev sivri uç nasıl yayılıyor?</h2>
+    <p>Outlier gücünü artır. Solda orijinal ağırlıklar, sağda rastgele işaret + Hadamard sonrası hâli var.</p>
+    <canvas id="bars" width="900" height="390"></canvas>
+    <div class="controls">
+      <div class="control"><label>Outlier gücü <b id="outlierVal">8</b></label><input id="outlier" type="range" min="0" max="20" step="0.5" value="8"></div>
+      <div class="btnrow"><button class="primary" id="newSigns">Rastgele işaretleri yenile</button><button id="newNoise">Küçük gürültüyü yenile</button></div>
+    </div>
+    <div class="statgrid">
+      <div class="stat"><b id="maxBefore">-</b><span>Önce maksimum mutlak değer</span></div>
+      <div class="stat"><b id="maxAfter">-</b><span>Sonra maksimum mutlak değer</span></div>
+      <div class="stat"><b id="energyBefore">-</b><span>Önce toplam enerji</span></div>
+      <div class="stat"><b id="energyAfter">-</b><span>Sonra toplam enerji</span></div>
+    </div>
+  </div>
+  <div class="card half">
+    <h2>Burada olan şey</h2>
+    <p>Hadamard matrisinin elemanları kabaca sadece <span class="kbd">+1</span> ve <span class="kbd">−1</span>. Bir koordinatı hesaplarken birçok ağırlığı topluyor/çıkarıyor:</p>
+    <div class="formula">yᵢ = (+w₁ − w₂ + w₃ + ... − wₙ) / √n</div>
+    <p>Büyük tek sayı, <span class="kbd">n</span> tane koordinata paylaştırılınca her koordinattaki etkisi yaklaşık <span class="kbd">1/√n</span> ölçeğine iner. Bu yüzden tek bir çılgın değer yerine daha sakin bir dağılım görürsün.</p>
+    <div class="note warning"><b>Benzetme:</b> Bir bardak boyayı tek noktaya dökersen koyu bir leke olur. Aynı boyayı 100 bardağa paylaştırırsan her bardakta az boya olur. Boya miktarı aynı, tek bardaktaki yoğunluk düşük.</div>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card half">
+    <h2>Oyun 2 — Karıştırma arttıkça bulut yuvarlaklaşıyor</h2>
+    <p>Bu oyuncak çizimde soldaki “dengesiz / eksenli” dağılımı Hadamard sonrası yuvarlak, merkeze yakın bir buluta benzetiyoruz.</p>
+    <canvas id="cloud" width="900" height="520"></canvas>
+    <div class="controls">
+      <div class="control"><label>Hadamard karıştırma miktarı <b id="mixVal">100%</b></label><input id="mix" type="range" min="0" max="100" value="100"></div>
+      <div class="btnrow"><button id="cloudSeed">Bulutu yenile</button></div>
+    </div>
+  </div>
+  <div class="card half">
+    <h2>Neden “Gaussian / top şekli” diyorlar?</h2>
+    <p>Çünkü her yeni koordinat, çok sayıda eski değerin artılı eksili karışımı gibi. Çok sayıda küçük etkinin toplamı çoğu zaman çan eğrisi / Gaussian benzeri görünür.</p>
+    <p>8 boyutta düşünürsen “çember” değil, “8D top” gibi bir yoğunluk çıkar. Makalede E8P codebook’un seçilme sebebi de bu: değer bulutu top gibiyse, temsil noktalarını da top içine iyi yerleştirmek mantıklı.</p>
+    <details><summary>Biraz daha teknik ama basit</summary><p>Hadamard işlemi uzunluğu koruyan ortogonal bir dönüşüm. Yani vektörün toplam büyüklüğü durur, koordinat sistemi değişir. Rastgele işaretler eklenince eski özel desenler kırılır. Sonuç: koordinatlar birbirine daha benzer ölçeklerde olur; outlier koordinat kalmaz.</p></details>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card twoThird">
+    <h2>Oyun 3 — Sürekli değerlerden ayrık codebook noktalarına</h2>
+    <p>Burada mavi noktalar Hadamard sonrası sürekli ağırlık vektörleri. Sarı noktalar hazır codebook merkezleri. “Yapıştır”ı açınca her mavi nokta en yakın sarı noktaya kilitlenir. Ayrık değer böyle oluşur.</p>
+    <canvas id="quant" width="980" height="590"></canvas>
+    <div class="legend"><span><i class="dot cyan"></i>Sürekli ağırlık</span><span><i class="dot yellow"></i>Codebook merkezi</span><span><i class="dot purple"></i>Quantized / ayrık</span><span><i class="dot red"></i>Hata mesafesi</span></div>
+    <div class="controls">
+      <div class="control"><label>Bit / merkez yoğunluğu <b id="bitVal">2 bit</b></label><input id="bits" type="range" min="1" max="4" step="1" value="2"></div>
+      <div class="btnrow"><button id="snap" class="primary">Yapıştır: açık</button><button id="shape">Top/lattice codebook</button><button id="regenQuant">Noktaları yenile</button></div>
+    </div>
+    <div class="statgrid">
+      <div class="stat"><b id="mse">-</b><span>Ortalama kare hata</span></div>
+      <div class="stat"><b id="used">-</b><span>Kullanılan ayrık merkez</span></div>
+      <div class="stat"><b id="centers">-</b><span>Toplam merkez</span></div>
+      <div class="stat"><b id="spacing">-</b><span>Merkez aralığı</span></div>
+    </div>
+  </div>
+  <div class="card third">
+    <h2>Bu tam olarak “ayrık değer” kısmı</h2>
+    <p>Normal ağırlıklar sonsuz sayıda olası ondalıklı değer alabilir: <span class="kbd">0.137</span>, <span class="kbd">0.141</span>, <span class="kbd">0.142</span>...</p>
+    <p>Quantization’da model şunu der: “Ben artık sadece şu hazır noktalardan birini saklayacağım.”</p>
+    <div class="formula">sürekli vektör → en yakın codebook vektörü</div>
+    <p>Bu yüzden değerler bir anda “basamaklı” ve ayrık görünür. Bilgi kaybı var, ama iyi codebook seçilirse kayıp küçük olur.</p>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card half">
+    <h2>Oyun 4 — Kare kutu mu, top/lattice mi?</h2>
+    <p>Hadamard sonrası bulut top gibiyse, codebook’u kareye yaymak biraz israf olur. Lattice mantığı: temsil noktalarını bulutun dolduğu bölgeye daha akıllı diz.</p>
+    <canvas id="compare" width="900" height="540"></canvas>
+    <div class="btnrow"><button id="compareMode" class="primary">Mod: top/lattice</button><button id="compareRegen">Yenile</button></div>
+    <div class="statgrid">
+      <div class="stat"><b id="compareMse">-</b><span>Bu modun MSE değeri</span></div>
+      <div class="stat"><b id="compareCenters">-</b><span>Merkez sayısı</span></div>
+    </div>
+  </div>
+  <div class="card half">
+    <h2>E8P niye özel?</h2>
+    <p>Makaledeki gerçek codebook 2D değil, 8D. E8 lattice 8 boyutta küreleri çok yoğun paketleyen çok simetrik bir yapı. QuIP# bunu E8P codebook olarak kullanıyor.</p>
+    <p>Basit benzetme: Yuvarlak taşları bir çantaya gelişigüzel atmak yerine en sıkı dizilişle yerleştirmek gibi. Aynı sayıda temsil noktasıyla ortalama hata düşüyor.</p>
+    <div class="note"><b>Pratik hile:</b> E8P sanki 2¹⁶ tane 8D nokta varmış gibi davranıyor ama simetri sayesinde küçük bir tablo ve işaret/shift işlemleriyle decode ediliyor. Bu da GPU cache’e sığmayı kolaylaştırıyor.</div>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card">
+    <h2>Mini quiz — kendini test et</h2>
+    <div class="quiz" id="quiz">
+      <div class="choice" data-ok="false">Hadamard transformu büyük değerleri gerçekten silip yok eder.</div>
+      <div class="choice" data-ok="true">Hadamard transformu toplam enerjiyi korurken büyük değerin etkisini birçok koordinata yayar.</div>
+      <div class="choice" data-ok="false">Quantization’dan önce değerler zaten ayrık olduğu için codebook gereksizdir.</div>
+    </div>
+    <p class="feedback" id="feedback"></p>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card">
+    <h2>En sonda akılda kalacak özet</h2>
+    <div class="stepper" id="steps">
+      <div class="step active" data-step="0"><b>1. Outlier var</b><small>Birkaç ağırlık çok büyük.</small></div>
+      <div class="step" data-step="1"><b>2. Hadamard yayar</b><small>Enerji çok koordinata dağılır.</small></div>
+      <div class="step" data-step="2"><b>3. Bulut oluşur</b><small>Değerler merkeze yakın, top gibi.</small></div>
+      <div class="step" data-step="3"><b>4. E8P yapıştırır</b><small>En yakın ayrık 8D noktaya gider.</small></div>
+    </div>
+    <p id="stepText" class="note">Modelde bazı ağırlıklar kocaman sivri uçlar gibi durur. Düşük bitte yuvarlama bu sivri uçları kötü yakalar.</p>
+  </div>
+</section>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function fwht(a){
+  const n=a.length, out=a.slice();
+  for(let len=1;len<n;len*=2){
+    for(let i=0;i<n;i+=2*len){
+      for(let j=0;j<len;j++){
+        const u=out[i+j], v=out[i+j+len]; out[i+j]=u+v; out[i+j+len]=u-v;
+      }
+    }
+  }
+  const s=Math.sqrt(n); return out.map(x=>x/s);
+}
+function drawGrid(ctx,w,h){
+  ctx.save(); ctx.strokeStyle='rgba(148,163,184,.12)'; ctx.lineWidth=1;
+  for(let x=0;x<=w;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+  for(let y=0;y<=h;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+  ctx.restore();
+}
+function drawText(ctx,txt,x,y,size=14,color='#dbeafe',align='left'){
+  ctx.fillStyle=color;ctx.font=`${size}px Inter, system-ui, sans-serif`;ctx.textAlign=align;ctx.fillText(txt,x,y);
+}
+
+// Demo 1 bars
+let signs = Array.from({length:16},()=>Math.random()<.5?-1:1);
+let noise = Array.from({length:16},()=>randn()*0.22);
+function updateBars(){
+  const c=$('bars'), ctx=c.getContext('2d'), W=c.width, H=c.height; ctx.clearRect(0,0,W,H); drawGrid(ctx,W,H);
+  const outlier=+$('outlier').value; $('outlierVal').textContent=outlier.toFixed(1);
+  const v=noise.slice(); v[3]+=outlier;
+  const signed=v.map((x,i)=>x*signs[i]); const t=fwht(signed);
+  const max=Math.max(...v.map(Math.abs),...t.map(Math.abs),1); const scale=120/max;
+  function bars(data,x0,w,title){
+    drawText(ctx,title,x0+w/2,28,17,'#e0f2fe','center');
+    const mid=205, gap=4, bw=(w-gap*(data.length-1))/data.length;
+    ctx.strokeStyle='rgba(226,232,240,.25)';ctx.beginPath();ctx.moveTo(x0,mid);ctx.lineTo(x0+w,mid);ctx.stroke();
+    data.forEach((val,i)=>{const x=x0+i*(bw+gap); const y=mid-val*scale; const h=val*scale; ctx.fillStyle=val>=0?'#67e8f9':'#a78bfa'; ctx.fillRect(x, h>=0?y:mid, bw, Math.abs(h)); if(i===3 && title.includes('Önce')){ctx.strokeStyle='#fbbf24';ctx.lineWidth=3;ctx.strokeRect(x-1,(h>=0?y:mid)-1,bw+2,Math.abs(h)+2)}})
+    drawText(ctx,'0 çizgisi',x0+6,mid-8,12,'#94a3b8');
+  }
+  bars(v,40,380,'Önce: ağırlıklar'); bars(t,480,380,'Sonra: ± işaret + Hadamard');
+  const energy=a=>a.reduce((s,x)=>s+x*x,0); const mx=a=>Math.max(...a.map(Math.abs));
+  $('maxBefore').textContent=mx(v).toFixed(2); $('maxAfter').textContent=mx(t).toFixed(2);
+  $('energyBefore').textContent=energy(v).toFixed(2); $('energyAfter').textContent=energy(t).toFixed(2);
+  ctx.fillStyle='rgba(251,191,36,.14)';ctx.fillRect(40+3*(380-15*4)/16+3*4-6,54,32,275);
+  drawText(ctx,'sivri uç',125,72,13,'#fbbf24','center');
+}
+$('outlier').addEventListener('input',updateBars); $('newSigns').onclick=()=>{signs=Array.from({length:16},()=>Math.random()<.5?-1:1);updateBars()}; $('newNoise').onclick=()=>{noise=Array.from({length:16},()=>randn()*0.22);updateBars()};
+
+// Demo cloud
+let cloudPts=[];
+function genCloud(){
+  cloudPts=[]; for(let i=0;i<260;i++){
+    const base={x:randn()*0.35 + (Math.random()<.10?randn()*1.8:0), y:randn()*0.05 + randn()*0.25};
+    const angle=Math.random()*Math.PI*2, r=Math.abs(randn())*.55; const after={x:Math.cos(angle)*r + randn()*.12, y:Math.sin(angle)*r + randn()*.12};
+    cloudPts.push({base,after});
+  }
+}
+function updateCloud(){
+  const c=$('cloud'), ctx=c.getContext('2d'), W=c.width, H=c.height; ctx.clearRect(0,0,W,H); drawGrid(ctx,W,H);
+  const m=+$('mix').value/100; $('mixVal').textContent=Math.round(m*100)+'%';
+  const cx=W/2, cy=H/2, scale=135;
+  ctx.strokeStyle='rgba(251,191,36,.45)';ctx.beginPath();ctx.ellipse(cx,cy,scale*1.15,scale*1.15,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='rgba(251,113,133,.35)';ctx.beginPath();ctx.ellipse(cx,cy,scale*2.1,scale*.45,0,0,Math.PI*2);ctx.stroke();
+  cloudPts.forEach(p=>{const x=(1-m)*p.base.x+m*p.after.x; const y=(1-m)*p.base.y+m*p.after.y; ctx.fillStyle=m>.5?'rgba(103,232,249,.72)':'rgba(251,191,36,.72)'; ctx.beginPath();ctx.arc(cx+x*scale,cy+y*scale,3,0,Math.PI*2);ctx.fill();});
+  drawText(ctx,'Dengesiz / eksenli dağılım',32,34,16,'#fbbf24'); drawText(ctx,'Yuvarlak, merkeze yakın bulut',W-32,34,16,'#67e8f9','right');
+  drawText(ctx,'Merkez = 0 civarı',cx,cy+6,13,'#94a3b8','center');
+}
+$('mix').addEventListener('input',updateCloud); $('cloudSeed').onclick=()=>{genCloud();updateCloud()};
+
+// Demo quantization
+let qPts=[], snapped=true, lattice=true;
+function genQPts(){qPts=[];for(let i=0;i<190;i++){const a=Math.random()*Math.PI*2, r=Math.min(2.25,Math.abs(randn())*.75);qPts.push({x:Math.cos(a)*r+randn()*.07,y:Math.sin(a)*r+randn()*.07})}}
+function centersFor(bits, latticeShape=true){
+  const spacing = {1:1.20,2:.82,3:.58,4:.42}[bits]; const arr=[]; const max=2.55;
+  if(latticeShape){
+    const dy=spacing*Math.sqrt(3)/2; let row=0;
+    for(let y=-max;y<=max;y+=dy,row++){ for(let x=-max;x<=max;x+=spacing){ const xx=x+(row%2?spacing/2:0); if(Math.hypot(xx,y)<=2.45) arr.push({x:xx,y}); }}
+  } else {
+    for(let y=-max;y<=max;y+=spacing){ for(let x=-max;x<=max;x+=spacing){ arr.push({x,y}); }}
+  }
+  return {arr,spacing};
+}
+function nearest(p,centers){let best=centers[0],bd=Infinity;for(const c of centers){const d=(p.x-c.x)**2+(p.y-c.y)**2;if(d<bd){bd=d;best=c}}return {c:best,d:bd}}
+function updateQuant(){
+  const c=$('quant'), ctx=c.getContext('2d'), W=c.width,H=c.height; ctx.clearRect(0,0,W,H); drawGrid(ctx,W,H);
+  const bits=+$('bits').value; $('bitVal').textContent=bits+' bit';
+  const {arr:centers,spacing}=centersFor(bits,lattice); const cx=W/2,cy=H/2,scale=110;
+  ctx.strokeStyle='rgba(148,163,184,.28)';ctx.beginPath();ctx.moveTo(cx,12);ctx.lineTo(cx,H-12);ctx.moveTo(12,cy);ctx.lineTo(W-12,cy);ctx.stroke();
+  centers.forEach(p=>{ctx.fillStyle='rgba(251,191,36,.65)';ctx.beginPath();ctx.arc(cx+p.x*scale,cy+p.y*scale,2.3,0,Math.PI*2);ctx.fill()});
+  let mse=0, used=new Set();
+  qPts.forEach(p=>{const n=nearest(p,centers); mse+=n.d; const key=n.c.x.toFixed(2)+','+n.c.y.toFixed(2); used.add(key);
+    const sx=cx+p.x*scale, sy=cy+p.y*scale, tx=cx+n.c.x*scale, ty=cy+n.c.y*scale;
+    if(snapped){ctx.strokeStyle='rgba(251,113,133,.42)';ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(tx,ty);ctx.stroke(); ctx.fillStyle='rgba(167,139,250,.82)';ctx.beginPath();ctx.arc(tx,ty,4,0,Math.PI*2);ctx.fill();}
+    else {ctx.fillStyle='rgba(103,232,249,.82)';ctx.beginPath();ctx.arc(sx,sy,4,0,Math.PI*2);ctx.fill();}
+  });
+  mse/=qPts.length; $('mse').textContent=mse.toFixed(4); $('used').textContent=used.size; $('centers').textContent=centers.length; $('spacing').textContent=spacing.toFixed(2);
+  $('snap').textContent='Yapıştır: '+(snapped?'açık':'kapalı'); $('snap').classList.toggle('primary',snapped);
+  $('shape').textContent=lattice?'Top/lattice codebook':'Kare/scalar grid'; $('shape').classList.toggle('primary',lattice);
+  drawText(ctx,lattice?'Top içine dizilmiş lattice benzeri merkezler':'Kare alana yayılmış scalar-grid merkezleri',24,34,17,'#e0f2fe');
+}
+$('bits').addEventListener('input',updateQuant); $('snap').onclick=()=>{snapped=!snapped;updateQuant()}; $('shape').onclick=()=>{lattice=!lattice;updateQuant()}; $('regenQuant').onclick=()=>{genQPts();updateQuant()};
+
+// Compare
+let comparePts=[], compareLattice=true;
+function genCompare(){comparePts=[];for(let i=0;i<240;i++){const a=Math.random()*Math.PI*2, r=Math.min(2.2,Math.abs(randn())*.8);comparePts.push({x:Math.cos(a)*r+randn()*.05,y:Math.sin(a)*r+randn()*.05})}}
+function updateCompare(){
+  const c=$('compare'),ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);drawGrid(ctx,W,H); const cx=W/2,cy=H/2,scale=105;
+  const {arr:centers}=centersFor(2,compareLattice); let mse=0;
+  centers.forEach(p=>{ctx.fillStyle='rgba(251,191,36,.55)';ctx.beginPath();ctx.arc(cx+p.x*scale,cy+p.y*scale,2.5,0,Math.PI*2);ctx.fill()});
+  comparePts.forEach(p=>{const n=nearest(p,centers); mse+=n.d; ctx.strokeStyle='rgba(251,113,133,.25)';ctx.beginPath();ctx.moveTo(cx+p.x*scale,cy+p.y*scale);ctx.lineTo(cx+n.c.x*scale,cy+n.c.y*scale);ctx.stroke();ctx.fillStyle='rgba(103,232,249,.68)';ctx.beginPath();ctx.arc(cx+p.x*scale,cy+p.y*scale,3,0,Math.PI*2);ctx.fill();});
+  mse/=comparePts.length; $('compareMse').textContent=mse.toFixed(4); $('compareCenters').textContent=centers.length; $('compareMode').textContent='Mod: '+(compareLattice?'top/lattice':'kare/grid'); $('compareMode').classList.toggle('primary',compareLattice);
+  drawText(ctx,compareLattice?'Temsil noktaları bulutun olduğu top bölgesine odaklanıyor':'Temsil noktaları kareye yayılıyor; köşelerde israf olabilir',24,34,16,'#e0f2fe');
+}
+$('compareMode').onclick=()=>{compareLattice=!compareLattice;updateCompare()}; $('compareRegen').onclick=()=>{genCompare();updateCompare()};
+
+// Quiz and steps
+Array.from(document.querySelectorAll('.choice')).forEach(ch=>ch.onclick=()=>{Array.from(document.querySelectorAll('.choice')).forEach(c=>c.classList.remove('correct','wrong')); const ok=ch.dataset.ok==='true'; ch.classList.add(ok?'correct':'wrong'); $('feedback').textContent=ok?'Aynen. Hadamard silmez; yayar. Quantization ise ayrıklaştırır.':'Yaklaştın ama değil. Ana fikir: Hadamard enerjiyi yayar, quantization ayrıklaştırır.'});
+const texts=[
+  'Modelde bazı ağırlıklar kocaman sivri uçlar gibi durur. Düşük bitte yuvarlama bu sivri uçları kötü yakalar.',
+  'Rastgele işaret + Hadamard, büyük koordinatı çok sayıda koordinata paylaştırır. Toplam enerji durur ama koordinat başına büyüklük sakinleşir.',
+  'Birçok küçük artı/eksi toplamı yüzünden dağılım Gaussian/top benzeri olur. Bu, vector quantization için daha uygun bir şekildir.',
+  'E8P codebook, her 8 boyutlu parçayı en yakın hazır lattice noktasına taşır. Artık sayı değil, codebook indeksi saklanır: ayrık değer budur.'
+];
+Array.from(document.querySelectorAll('.step')).forEach(s=>s.onclick=()=>{Array.from(document.querySelectorAll('.step')).forEach(x=>x.classList.remove('active'));s.classList.add('active');$('stepText').textContent=texts[+s.dataset.step]});
+
+genCloud(); genQPts(); genCompare(); updateBars(); updateCloud(); updateQuant(); updateCompare();
+</script>
+</body>
+</html>
