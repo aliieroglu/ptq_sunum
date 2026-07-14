@@ -1434,7 +1434,7 @@ function g3update(){
   $('g3_centers').textContent=centers.length; $('g3_spacing').textContent=spacing.toFixed(2);
   $('g3_snap').textContent='Yapıştır: '+(g3snap?'açık':'kapalı'); $('g3_snap').classList.toggle('on',g3snap);
   $('g3_shape').textContent=g3lattice?'Top/lattice codebook':'Kare/scalar grid'; $('g3_shape').classList.toggle('on',g3lattice);
-  drawText(ctx,g3lattice?'Top içine dizilmiş lattice benzeri merkezler':'Kare alana yayılmış scalar-grid merkezleri',24,34,17,'#EAEEF5');
+  drawText(ctx,g3lattice?'Top içine dizilmiş lattice benzeri merkezler':'Kare alana yayılmış scalar-grid merkezleri',24,36,20,'#EAEEF5');
 }
 
 /* — Oyun 4: kare vs lattice — */
@@ -1451,7 +1451,7 @@ function g4update(){
     ctx.fillStyle='rgba(79,214,190,.7)';ctx.beginPath();ctx.arc(cx+p.x*scale,cy+p.y*scale,3,0,Math.PI*2);ctx.fill();});
   mse/=g4pts.length; $('g4_mse').textContent=mse.toFixed(4); $('g4_centers').textContent=centers.length;
   $('g4_mode').textContent='Mod: '+(g4lattice?'top/lattice':'kare/grid'); $('g4_mode').classList.toggle('on',g4lattice);
-  drawText(ctx,g4lattice?'Temsil noktaları bulutun olduğu top bölgesine odaklanıyor':'Temsil noktaları kareye yayılıyor; köşelerde israf var',24,34,16,'#EAEEF5');
+  drawText(ctx,g4lattice?'Temsil noktaları bulutun olduğu top bölgesine odaklanıyor':'Temsil noktaları kareye yayılıyor; köşelerde israf var',24,36,19,'#EAEEF5');
 }
 
 /* — bağla + başlat — */
